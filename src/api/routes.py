@@ -8,8 +8,12 @@ from flask_jwt_extended import create_access_token
 from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import jwt_required
 from werkzeug.security import generate_password_hash, check_password_hash
+import string
+import jwt
+import secrets
 
 api = Blueprint('api', __name__)
+JWT_SECRET_KEY = secrets.token_hex(32)
 
 
 @api.route('/hello', methods=['POST', 'GET'])
@@ -98,7 +102,6 @@ def login():
 
     except Exception as e:
         return jsonify(message=str(e)), 500
-    
 
 @api.route('/user/<int:id>', methods=['PUT'])
 def update_user(id):

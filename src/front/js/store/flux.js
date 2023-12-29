@@ -2,6 +2,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 	return {
 		store: {
 			message: null,
+            token: null,
 			demo: [
 				{
 					title: "FIRST",
@@ -21,48 +22,51 @@ const getState = ({ getStore, getActions, setStore }) => {
 				getActions().changeColor(0, "green");
 			},
 			login: async (email, password) => {
-                try {
                     let options = {
                         method: "POST",
+                        mode: "cors",
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({ email, password }),
+                        body: JSON.stringify({ email: email, password: password}),
                     };
-                    const response = await fetch(process.env.BACKEND_URL + "/api/login", options);
+                    try{
+                    const response = await fetch(process.env.BACKEND_URL + "/api/token", options)
                     console.log('Login response:', response);
                     if (response.status === 200) {
                         const data = await response.json();
-                        console.log("access token", data.access_token);
+                        console.log("access token", data);
                         sessionStorage.setItem("token", data.access_token);
-                        sessionStorage.setItem("email", email);
+                        // sessionStorage.setItem("email", email);
                         setStore({
                             token: data.access_token,
                             email: email,
                         });
                         return true;
                     } else {
-                        console.error("Login failed. Please check your credentials.");
+                        console.error("Login failed. Please check your credentials.", response.status);
                         return false;
                     }
                 } catch (error) {
-                    console.error("Login error:", error);
+                    console.error("Login error:", error, response.status); 
+                    const response = await fetch(process.env.BACKEND_URL + "/api/token", options)
                     alert("An error occurred during login.");
                     return false;
                 }
+                
             },
             signup: async (formData) => {
                 try {
-                    const response = await fetch(process.env.BACKEND_URL + "/api/signup", {
+                    const response = await fetch(process.env.BACKEND_URL + "/api/signup", options, {
                         method: "POST",
+                        mode: "cors",
                         headers: {
                             'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*',
                         },
                         body: JSON.stringify({
-                            "email": formData.email,
-                            "password": formData.password,
-                            "first_name": formData.first_name,
-                            "last_name": formData.last_name
+                            email: email,
+                            password: password,
                         })
                     });
                     let data = await response.json();
@@ -72,6 +76,7 @@ const getState = ({ getStore, getActions, setStore }) => {
                     }
                 } catch (error) {
                     console.log(error);
+
                 }
             },
 			getUser: async () => {

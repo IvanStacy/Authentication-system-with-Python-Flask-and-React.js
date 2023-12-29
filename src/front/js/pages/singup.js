@@ -1,16 +1,18 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { Context } from "../store/appContext";
 
 export const Singup = () => {
+  const {store, actions} = useContext(Context);
   const [email, setEmail] = useState();
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const Navigate = useNavigate();
-  const createAccount = (e) => {
+  const singup = (e) => {
     e.preventDefault()
-    fetch(process.env.BACKEND_URL + "/createAccount", {
+    fetch(process.env.BACKEND_URL + "/api/singup", {
       method: "POST",
       mode: "cors",
       headers: {
@@ -50,7 +52,7 @@ export const Singup = () => {
   const handleSubmit = async () => {
     const requiredFields = ["email", "password"];
 
-    if (formData.password !== confirmPassword) {
+    if (password !== confirmPassword) {
       console.error("Passwords do not match");
       return;
     }
@@ -83,7 +85,7 @@ export const Singup = () => {
   // )
   // }
   return (
-    <form onSubmit={createAccount} className="container">
+    <form onSubmit={singup} className="container">
       <div className="mb-3">
         <label htmlFor="exampleInputEmail" className="form-label">
           Email address
@@ -111,6 +113,7 @@ export const Singup = () => {
           type="password"
           className="form-control"
           id="exampleInputPassword1"
+          name="password"
         />
       </div>
 
@@ -125,6 +128,7 @@ export const Singup = () => {
           type="password"
           className="form-control"
           id="exampleConfirmPassword"
+          name="confirmPassword"
           required
         />
       </div>
