@@ -7,6 +7,7 @@ from api.utils import generate_sitemap, APIException
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import jwt_required
+from werkzeug.security import generate_password_hash, check_password_hash
 
 api = Blueprint('api', __name__)
 
@@ -39,20 +40,65 @@ def get_user(id):
         raise APIException('user not found', status_code=404)
     return jsonify(user.serialize()),200
 
-@api.route('/singup', methods=['POST'])
-def create_user():
-    body = request.json()
-    user=User()
-    if 'email' not in body :
-        raise APIException ('you need provide your email', status_code=400)
-    if 'password' not in body :
-        raise APIException ('you need to provide your password', status_code=400)
-    user.email=body['email']
-    user.password=body['password']
-    user.is_active=True
-    db.session.add(user)
+# @api.route('/singup', methods=['POST'])
+# def create_user():
+#     body = request.json()
+#     user=User()
+#     if 'email' not in body :
+#         raise APIException ('you need provide your email', status_code=400)
+#     if 'password' not in body :
+#         raise APIException ('you need to provide your password', status_code=400)
+#     user.email=body['email']
+#     user.password=body['password']
+#     user.is_active=True
+#     db.session.add(user)
+#     db.session.commit()
+#     return jsonify(user.serialize()), 200
+
+@api.route('/signup', methods=['POST', 'OPTIONS'])
+def signup():
+    body = request.get_json()
+    if (
+        "email" not in body.keys()
+        or "password" not in body.keys()
+    ):
+        raise APIException("Please provide all required fields", status_code=400)
+    email = body['email']
+    password = body['password']
+
+    existing_user = User.query.filter_by(email=email).first()
+    if existing_user is not None:
+        return jsonify(message="User already exists"), 400
+
+    hashed_password = generate_password_hash(password)
+    new_user = User(
+        email=email,
+        password=hashed_password,
+    )
+    db.session.add(new_user)
     db.session.commit()
-    return jsonify(user.serialize()), 200
+    return jsonify(message="Successfully created user."), 200
+
+@api.route('/login', methods=['POST'])
+def login():
+    try:
+        body = request.get_json()
+        if "email" not in body or "password" not in body:
+            raise APIException("Please provide both email and password", status_code=400)
+
+        email = body['email']
+        password = body['password']
+        user = User.query.filter_by(email=email).first()
+        print(user)
+        if user and check_password_hash(user.password, password):
+            access_token = create_access_token(identity=email)
+            return jsonify(access_token=access_token), 200
+        else:
+            return jsonify(message="Login failed. Please check your credentials."), 401
+
+    except Exception as e:
+        return jsonify(message=str(e)), 500
+    
 
 @api.route('/user/<int:id>', methods=['PUT'])
 def update_user(id):
@@ -69,6 +115,7 @@ def update_user(id):
 
     db.session.commit()
     return jsonify(user.serialize()), 200
+
 
 @api.route('/user/<int:id>', methods=['DELETE'])
 def delete_user(id):

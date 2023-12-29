@@ -20,7 +20,81 @@ const getState = ({ getStore, getActions, setStore }) => {
 			exampleFunction: () => {
 				getActions().changeColor(0, "green");
 			},
+			login: async (email, password) => {
+                try {
+                    let options = {
+                        method: "POST",
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ email, password }),
+                    };
+                    const response = await fetch(process.env.BACKEND_URL + "/api/login", options);
+                    console.log('Login response:', response);
+                    if (response.status === 200) {
+                        const data = await response.json();
+                        console.log("access token", data.access_token);
+                        sessionStorage.setItem("token", data.access_token);
+                        sessionStorage.setItem("email", email);
+                        setStore({
+                            token: data.access_token,
+                            email: email,
+                        });
+                        return true;
+                    } else {
+                        console.error("Login failed. Please check your credentials.");
+                        return false;
+                    }
+                } catch (error) {
+                    console.error("Login error:", error);
+                    alert("An error occurred during login.");
+                    return false;
+                }
+            },
+            signup: async (formData) => {
+                try {
+                    const response = await fetch(process.env.BACKEND_URL + "/api/signup", {
+                        method: "POST",
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            "email": formData.email,
+                            "password": formData.password,
+                            "first_name": formData.first_name,
+                            "last_name": formData.last_name
+                        })
+                    });
+                    let data = await response.json();
+                    if (data) {
+                        console.log(data.message);
+                        return true;
+                    }
+                } catch (error) {
+                    console.log(error);
+                }
+            },
+			getUser: async () => {
+                try {
+                    const token = sessionStorage.getItem("token");
+                    const response = await fetch(`${process.env.BACKEND_URL}/api/user`,
+                        {
+                            method: "GET",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Authorization": `Bearer ${token}`,
+                            }
 
+                        }
+
+                    )
+                    let data = await response.json();
+                    return await data
+                }
+                catch (error) {
+                    throw new Error(`Error: ${error.message}`);
+                }
+			},
 			getMessage: async () => {
 				try{
 					// fetching data from the backend
