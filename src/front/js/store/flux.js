@@ -3,18 +3,18 @@ const getState = ({ getStore, getActions, setStore }) => {
 		store: {
 			message: null,
             token: null,
-			demo: [
-				{
-					title: "FIRST",
-					background: "white",
-					initial: "white"
-				},
-				{
-					title: "SECOND",
-					background: "white",
-					initial: "white"
-				}
-			]
+			// demo: [
+			// 	{
+			// 		title: "FIRST",
+			// 		background: "white",
+			// 		initial: "white"
+			// 	},
+			// 	{
+			// 		title: "SECOND",
+			// 		background: "white",
+			// 		initial: "white"
+			// 	}
+			// ]
 		},
 		actions: {
 			// Use getActions to call a function within a fuction
@@ -24,14 +24,13 @@ const getState = ({ getStore, getActions, setStore }) => {
 			login: async (email, password) => {
                     let options = {
                         method: "POST",
-                        mode: "cors",
                         headers: {
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({ email: email, password: password}),
                     };
                     try{
-                    const response = await fetch(process.env.BACKEND_URL + "/api/token", options)
+                    const response = await fetch(process.env.BACKEND_URL + "/api/login", options)
                     console.log('Login response:', response);
                     if (response.status === 200) {
                         const data = await response.json();
@@ -48,8 +47,7 @@ const getState = ({ getStore, getActions, setStore }) => {
                         return false;
                     }
                 } catch (error) {
-                    console.error("Login error:", error, response.status); 
-                    const response = await fetch(process.env.BACKEND_URL + "/api/token", options)
+                    console.error("Login error:", error); 
                     alert("An error occurred during login.");
                     return false;
                 }
@@ -57,7 +55,7 @@ const getState = ({ getStore, getActions, setStore }) => {
             },
             signup: async (formData) => {
                 try {
-                    const response = await fetch(process.env.BACKEND_URL + "/api/signup", options, {
+                    const response = await fetch(process.env.BACKEND_URL + "/api/signup", {
                         method: "POST",
                         mode: "cors",
                         headers: {
@@ -65,8 +63,8 @@ const getState = ({ getStore, getActions, setStore }) => {
                             'Access-Control-Allow-Origin': '*',
                         },
                         body: JSON.stringify({
-                            email: email,
-                            password: password,
+                            email: formData.email,
+                            password: formData.password,
                         })
                     });
                     let data = await response.json();

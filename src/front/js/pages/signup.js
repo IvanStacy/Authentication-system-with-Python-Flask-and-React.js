@@ -3,37 +3,34 @@ import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { Context } from "../store/appContext";
 
-export const Singup = () => {
+export const Signup = () => {
   const {store, actions} = useContext(Context);
   const [email, setEmail] = useState();
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const Navigate = useNavigate();
-  const singup = (e) => {
+  const signup = async (e) => {
     e.preventDefault()
-    fetch(process.env.BACKEND_URL + "/api/singup", {
-      method: "POST",
-      mode: "cors",
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
-      body: JSON.stringify({ email: email, password: password })
-
-    })
-      .then((response) => response.json())
-      .then((result) => {
-        if (result.includes('User already exists :(')) {
-          setError('User already exists :(');
-        } else {
-          console.log(result);
-          Navigate("/Login");
-        }
+    try{
+      let response =  await fetch(process.env.BACKEND_URL + "/api/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: email, password: password })
+  
       })
-      .catch((error) => {
-        console.log(error);
-      });
+      let data = await response.json()
+      if (data) {
+        Navigate("/Login");
+      } else {
+        console.log(response);
+      }
+    } 
+    catch (error){
+      console.log(error)
+    }
   }
   const [formData, setFormData] = useState({
     email: "",
@@ -69,30 +66,15 @@ export const Singup = () => {
       setConfirmPassword(""); // Reset confirmPassword as well
     }
   }
-
-  // return(
-  //     <div className="container pt-3">
-  //         <div className="Card mx-auto" style={{width: "25rem"}}>
-  //             <h3 className="text-center">Singup</h3>
-  //             <p className="text-center">Please create your account</p>
-  //             <label htmlFor="email" className="form-label">Email</label>
-  //             <input type="email" value={email} onChange={(e)=> setEmail(e.target.value)} className="form-control" id="exampleInputEmail" aria-activedescendant="Email"></input> 
-  //             <label htmlFor="password" className="form-label">Password</label>
-  //             <input type="password" value={password} onChange={(e)=> setPassword(e.target.value)} className="form-control" id="exampleInputPassword"></input>
-  //             <button className="btn btn-success mt-3 w-100">Submit</button>
-  //         </div>
-  //     </div>
-  // )
-  // }
   return (
-    <form onSubmit={singup} className="container">
+    <form onSubmit={signup} className="container">
       <div className="mb-3">
         <label htmlFor="exampleInputEmail" className="form-label">
           Email address
         </label>
         <input
           onChange={(e) => setEmail(e.target.value)}
-          value={email} placeholder="youremail@mail.com"
+          value={email}
           type="email"
           className="form-control"
           id="exampleInputEmail1"
@@ -138,8 +120,8 @@ export const Singup = () => {
           Remember Me
         </label>
       </div>
-      <button type="submit" onClick={() => handleSubmit()} className="btn btn-primary">
-        Create Account
+      <button type="submit" className="btn btn-primary">
+        Submit
       </button>
       <Link to="/Login">
         <button type="submit" className="btn btn-primary">

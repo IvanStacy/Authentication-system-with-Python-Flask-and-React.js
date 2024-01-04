@@ -59,25 +59,24 @@ def get_user(id):
 #     db.session.commit()
 #     return jsonify(user.serialize()), 200
 
-@api.route('/signup', methods=['POST', 'OPTIONS'])
+@api.route('/signup', methods=['POST'])
 def signup():
     body = request.get_json()
-    if (
-        "email" not in body.keys()
-        or "password" not in body.keys()
-    ):
-        raise APIException("Please provide all required fields", status_code=400)
     email = body['email']
     password = body['password']
-
+    if email is None: 
+        return jsonify(message="No email was provided"), 400
+    if password is None:
+        return jsonify(message="No password was provided"), 400
     existing_user = User.query.filter_by(email=email).first()
-    if existing_user is not None:
-        return jsonify(message="User already exists"), 400
+    if existing_user:
+        return jsonify(message="User already exists"), 409
 
     hashed_password = generate_password_hash(password)
     new_user = User(
         email=email,
         password=hashed_password,
+        is_active=True
     )
     db.session.add(new_user)
     db.session.commit()
