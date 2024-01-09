@@ -23,7 +23,7 @@ export const Signup = () => {
       })
       let data = await response.json()
       if (data) {
-        Navigate("/Login");
+        Navigate("/login");
       } else {
         console.log(response);
       }

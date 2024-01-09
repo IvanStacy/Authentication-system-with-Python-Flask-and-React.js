@@ -1,6 +1,7 @@
 import React, { useContext, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Context } from "../store/appContext";
+
 
 export const Login = () => {
 const [email, setEmail] = useState();
@@ -18,7 +19,7 @@ const handleLogin = (e) => {
 return (
     <div className="container pt-3">
         {(store.token && store.token !== "" && store.token !== undefined ) ? 
-        "You're loged in with this token" + store.token 
+        <div><Link to="/private">Go Private</Link></div> 
     :
     <div className="Card mx-auto" style={{width: "25rem"}}>
         <h3 className="text-center">Login</h3>
